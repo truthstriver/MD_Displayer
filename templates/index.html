@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Displayer</title>
+<style>
+  /* ============================================================
+     CSS Custom Properties – Theme Definitions (7 themes)
+     ============================================================ */
+
+  /* ---- 1. Dark (default) ---- */
+  :root,
+  [data-theme="dark"] {
+    --bg-primary:        #0f172a;
+    --bg-secondary:      rgba(255,255,255,0.05);
+    --bg-tertiary:       rgba(255,255,255,0.06);
+    --text-primary:      #e0e0e0;
+    --text-secondary:    #94a3b8;
+    --text-heading:      #f1f5f9;
+    --text-muted:        #64748b;
+    --border-primary:    rgba(255,255,255,0.15);
+    --border-secondary:  rgba(255,255,255,0.08);
+    --border-tertiary:   rgba(255,255,255,0.10);
+    --accent-primary:    #818cf8;
+    --accent-primary2:   #6366f1;
+    --accent-secondary:  #60a5fa;
+    --accent-tertiary:   #34d399;
+    --code-bg:           rgba(129,140,248,0.12);
+    --code-text:         #c4b5fd;
+    --card-bg:           rgba(255,255,255,0.06);
+    --card-border:       rgba(255,255,255,0.08);
+    --card-hover-border: rgba(255,255,255,0.14);
+    --shadow:            0 12px 40px rgba(0,0,0,0.35);
+    --topbar-bg:         rgba(15,23,42,0.85);
+    --select-bg:         rgba(255,255,255,0.08);
+    --select-text:       #cbd5e1;
+    --btn-primary-bg:    #6366f1;
+    --btn-primary-hover: #4f46e5;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(239,68,68,0.15);
+    --btn-danger-border: rgba(239,68,68,0.25);
+    --btn-danger-text:   #fca5a5;
+    --btn-danger-hover-bg: rgba(239,68,68,0.25);
+    --btn-danger-hover-text: #fecaca;
+    --toast-bg:          #1e293b;
+    --toast-border:      rgba(255,255,255,0.1);
+    --toast-text:        #f1f5f9;
+    --toast-error-border: rgba(239,68,68,0.4);
+    --toast-error-text:  #fca5a5;
+    --card-accent:       linear-gradient(90deg, #818cf8, #60a5fa);
+    --dot-color:         #34d399;
+    --body-gradient:     linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  }
+
+  /* ---- 2. Light ---- */
+  [data-theme="light"] {
+    --bg-primary:        #f8fafc;
+    --bg-secondary:      #ffffff;
+    --bg-tertiary:       #f1f5f9;
+    --text-primary:      #1e293b;
+    --text-secondary:    #64748b;
+    --text-heading:      #0f172a;
+    --text-muted:        #94a3b8;
+    --border-primary:    rgba(0,0,0,0.15);
+    --border-secondary:  rgba(0,0,0,0.08);
+    --border-tertiary:   rgba(0,0,0,0.10);
+    --accent-primary:    #4f46e5;
+    --accent-primary2:   #4338ca;
+    --accent-secondary:  #3b82f6;
+    --accent-tertiary:   #10b981;
+    --code-bg:           rgba(79,70,229,0.08);
+    --code-text:         #4f46e5;
+    --card-bg:           #ffffff;
+    --card-border:       rgba(0,0,0,0.08);
+    --card-hover-border: rgba(0,0,0,0.14);
+    --shadow:            0 8px 30px rgba(0,0,0,0.10);
+    --topbar-bg:         rgba(248,250,252,0.90);
+    --select-bg:         #f1f5f9;
+    --select-text:       #334155;
+    --btn-primary-bg:    #4f46e5;
+    --btn-primary-hover: #4338ca;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(239,68,68,0.08);
+    --btn-danger-border: rgba(239,68,68,0.25);
+    --btn-danger-text:   #dc2626;
+    --btn-danger-hover-bg: rgba(239,68,68,0.15);
+    --btn-danger-hover-text: #b91c1c;
+    --toast-bg:          #ffffff;
+    --toast-border:      rgba(0,0,0,0.1);
+    --toast-text:        #1e293b;
+    --toast-error-border: rgba(239,68,68,0.4);
+    --toast-error-text:  #dc2626;
+    --card-accent:       linear-gradient(90deg, #4f46e5, #3b82f6);
+    --dot-color:         #10b981;
+    --body-gradient:     linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+  }
+
+  /* ---- 3. Forest (green nature) ---- */
+  [data-theme="forest"] {
+    --bg-primary:        #0d2818;
+    --bg-secondary:      rgba(255,255,255,0.03);
+    --bg-tertiary:       rgba(144,238,144,0.06);
+    --text-primary:      #d1e7d6;
+    --text-secondary:    #7ba38a;
+    --text-heading:      #e8f5e9;
+    --text-muted:        #528066;
+    --border-primary:    rgba(144,238,144,0.18);
+    --border-secondary:  rgba(144,238,144,0.08);
+    --border-tertiary:   rgba(144,238,144,0.12);
+    --accent-primary:    #4ade80;
+    --accent-primary2:   #22c55e;
+    --accent-secondary:  #86efac;
+    --accent-tertiary:   #a7f3d0;
+    --code-bg:           rgba(74,222,128,0.12);
+    --code-text:         #86efac;
+    --card-bg:           rgba(255,255,255,0.03);
+    --card-border:       rgba(144,238,144,0.08);
+    --card-hover-border: rgba(144,238,144,0.16);
+    --shadow:            0 12px 40px rgba(0,0,0,0.35);
+    --topbar-bg:         rgba(13,40,24,0.88);
+    --select-bg:         rgba(144,238,144,0.10);
+    --select-text:       #b8e6c8;
+    --btn-primary-bg:    #22c55e;
+    --btn-primary-hover: #16a34a;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(239,68,68,0.15);
+    --btn-danger-border: rgba(239,68,68,0.25);
+    --btn-danger-text:   #fca5a5;
+    --btn-danger-hover-bg: rgba(239,68,68,0.25);
+    --btn-danger-hover-text: #fecaca;
+    --toast-bg:          #0d2818;
+    --toast-border:      rgba(144,238,144,0.15);
+    --toast-text:        #d1e7d6;
+    --toast-error-border: rgba(239,68,68,0.4);
+    --toast-error-text:  #fca5a5;
+    --card-accent:       linear-gradient(90deg, #4ade80, #86efac);
+    --dot-color:         #4ade80;
+    --body-gradient:     linear-gradient(135deg, #0a1f14 0%, #0d2818 50%, #0a1f14 100%);
+  }
+
+  /* ---- 4. Sunset (warm orange/amber) ---- */
+  [data-theme="sunset"] {
+    --bg-primary:        #1a0f14;
+    --bg-secondary:      rgba(255,255,255,0.03);
+    --bg-tertiary:       rgba(251,146,60,0.06);
+    --text-primary:      #fce7d8;
+    --text-secondary:    #c4a28a;
+    --text-heading:      #fff1e6;
+    --text-muted:        #9a7b6b;
+    --border-primary:    rgba(251,146,60,0.18);
+    --border-secondary:  rgba(251,146,60,0.08);
+    --border-tertiary:   rgba(251,146,60,0.12);
+    --accent-primary:    #fb923c;
+    --accent-primary2:   #f97316;
+    --accent-secondary:  #fdba74;
+    --accent-tertiary:   #fcd34d;
+    --code-bg:           rgba(251,146,60,0.12);
+    --code-text:         #fdba74;
+    --card-bg:           rgba(255,255,255,0.03);
+    --card-border:       rgba(251,146,60,0.08);
+    --card-hover-border: rgba(251,146,60,0.16);
+    --shadow:            0 12px 40px rgba(0,0,0,0.35);
+    --topbar-bg:         rgba(26,15,20,0.88);
+    --select-bg:         rgba(251,146,60,0.10);
+    --select-text:       #fcd4b8;
+    --btn-primary-bg:    #f97316;
+    --btn-primary-hover: #ea580c;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(239,68,68,0.15);
+    --btn-danger-border: rgba(239,68,68,0.25);
+    --btn-danger-text:   #fca5a5;
+    --btn-danger-hover-bg: rgba(239,68,68,0.25);
+    --btn-danger-hover-text: #fecaca;
+    --toast-bg:          #1a0f14;
+    --toast-border:      rgba(251,146,60,0.15);
+    --toast-text:        #fce7d8;
+    --toast-error-border: rgba(239,68,68,0.4);
+    --toast-error-text:  #fca5a5;
+    --card-accent:       linear-gradient(90deg, #fb923c, #fdba74);
+    --dot-color:         #fb923c;
+    --body-gradient:     linear-gradient(135deg, #1a0f14 0%, #2d1a1f 50%, #1a0f14 100%);
+  }
+
+  /* ---- 5. Ocean (cool blue/cyan) ---- */
+  [data-theme="ocean"] {
+    --bg-primary:        #0c1929;
+    --bg-secondary:      rgba(255,255,255,0.03);
+    --bg-tertiary:       rgba(56,189,248,0.06);
+    --text-primary:      #d9eaf7;
+    --text-secondary:    #7faac4;
+    --text-heading:      #ebf4fc;
+    --text-muted:        #5a85a6;
+    --border-primary:    rgba(56,189,248,0.18);
+    --border-secondary:  rgba(56,189,248,0.08);
+    --border-tertiary:   rgba(56,189,248,0.12);
+    --accent-primary:    #38bdf8;
+    --accent-primary2:   #0ea5e9;
+    --accent-secondary:  #7dd3fc;
+    --accent-tertiary:   #22d3ee;
+    --code-bg:           rgba(56,189,248,0.12);
+    --code-text:         #7dd3fc;
+    --card-bg:           rgba(255,255,255,0.03);
+    --card-border:       rgba(56,189,248,0.08);
+    --card-hover-border: rgba(56,189,248,0.16);
+    --shadow:            0 12px 40px rgba(0,0,0,0.35);
+    --topbar-bg:         rgba(12,25,41,0.88);
+    --select-bg:         rgba(56,189,248,0.10);
+    --select-text:       #b8ddf5;
+    --btn-primary-bg:    #0ea5e9;
+    --btn-primary-hover: #0284c7;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(239,68,68,0.15);
+    --btn-danger-border: rgba(239,68,68,0.25);
+    --btn-danger-text:   #fca5a5;
+    --btn-danger-hover-bg: rgba(239,68,68,0.25);
+    --btn-danger-hover-text: #fecaca;
+    --toast-bg:          #0c1929;
+    --toast-border:      rgba(56,189,248,0.15);
+    --toast-text:        #d9eaf7;
+    --toast-error-border: rgba(239,68,68,0.4);
+    --toast-error-text:  #fca5a5;
+    --card-accent:       linear-gradient(90deg, #38bdf8, #7dd3fc);
+    --dot-color:         #38bdf8;
+    --body-gradient:     linear-gradient(135deg, #091520 0%, #0c1929 50%, #091520 100%);
+  }
+
+  /* ---- 6. Mono (grayscale) ---- */
+  [data-theme="mono"] {
+    --bg-primary:        #18181b;
+    --bg-secondary:      rgba(255,255,255,0.03);
+    --bg-tertiary:       rgba(255,255,255,0.06);
+    --text-primary:      #d4d4d8;
+    --text-secondary:    #a1a1aa;
+    --text-heading:      #e4e4e7;
+    --text-muted:        #71717a;
+    --border-primary:    rgba(255,255,255,0.15);
+    --border-secondary:  rgba(255,255,255,0.08);
+    --border-tertiary:   rgba(255,255,255,0.10);
+    --accent-primary:    #a1a1aa;
+    --accent-primary2:   #d4d4d8;
+    --accent-secondary:  #e4e4e7;
+    --accent-tertiary:   #71717a;
+    --code-bg:           rgba(161,161,170,0.12);
+    --code-text:         #d4d4d8;
+    --card-bg:           rgba(255,255,255,0.06);
+    --card-border:       rgba(255,255,255,0.08);
+    --card-hover-border: rgba(255,255,255,0.14);
+    --shadow:            0 12px 40px rgba(0,0,0,0.35);
+    --topbar-bg:         rgba(24,24,27,0.88);
+    --select-bg:         rgba(255,255,255,0.08);
+    --select-text:       #d4d4d8;
+    --btn-primary-bg:    #52525b;
+    --btn-primary-hover: #3f3f46;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(239,68,68,0.15);
+    --btn-danger-border: rgba(239,68,68,0.25);
+    --btn-danger-text:   #fca5a5;
+    --btn-danger-hover-bg: rgba(239,68,68,0.25);
+    --btn-danger-hover-text: #fecaca;
+    --toast-bg:          #18181b;
+    --toast-border:      rgba(255,255,255,0.1);
+    --toast-text:        #d4d4d8;
+    --toast-error-border: rgba(239,68,68,0.4);
+    --toast-error-text:  #fca5a5;
+    --card-accent:       linear-gradient(90deg, #d4d4d8, #a1a1aa);
+    --dot-color:         #a1a1aa;
+    --body-gradient:     linear-gradient(135deg, #18181b 0%, #27272a 50%, #18181b 100%);
+  }
+
+  /* ---- 7. Cyberpunk (neon on black) ---- */
+  [data-theme="cyberpunk"] {
+    --bg-primary:        #0a0a0a;
+    --bg-secondary:      rgba(255,0,255,0.03);
+    --bg-tertiary:       rgba(0,255,255,0.04);
+    --text-primary:      #e0e0e0;
+    --text-secondary:    #b080b0;
+    --text-heading:      #f0f0f0;
+    --text-muted:        #806080;
+    --border-primary:    rgba(255,0,255,0.20);
+    --border-secondary:  rgba(255,0,255,0.10);
+    --border-tertiary:   rgba(0,255,255,0.12);
+    --accent-primary:    #ff00ff;
+    --accent-primary2:   #cc00cc;
+    --accent-secondary:  #00ffff;
+    --accent-tertiary:   #ffff00;
+    --code-bg:           rgba(255,0,255,0.12);
+    --code-text:         #ff80ff;
+    --card-bg:           rgba(255,0,255,0.03);
+    --card-border:       rgba(255,0,255,0.10);
+    --card-hover-border: rgba(255,0,255,0.22);
+    --shadow:            0 12px 40px rgba(255,0,255,0.15);
+    --topbar-bg:         rgba(10,10,10,0.92);
+    --select-bg:         rgba(255,0,255,0.10);
+    --select-text:       #ffb0ff;
+    --btn-primary-bg:    #cc00cc;
+    --btn-primary-hover: #990099;
+    --btn-primary-text:  #fff;
+    --btn-danger-bg:     rgba(255,0,0,0.15);
+    --btn-danger-border: rgba(255,0,0,0.30);
+    --btn-danger-text:   #ff8080;
+    --btn-danger-hover-bg: rgba(255,0,0,0.25);
+    --btn-danger-hover-text: #ffaaaa;
+    --toast-bg:          #0a0a0a;
+    --toast-border:      rgba(255,0,255,0.20);
+    --toast-text:        #e0e0e0;
+    --toast-error-border: rgba(255,0,0,0.40);
+    --toast-error-text:  #ff8080;
+    --card-accent:       linear-gradient(90deg, #ff00ff, #00ffff);
+    --dot-color:         #00ffff;
+    --body-gradient:     linear-gradient(135deg, #0a0a0a 0%, #0d001a 50%, #0a0a0a 100%);
+  }
+
+  /* ============================================================
+     Reset & Base
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    background: var(--body-gradient);
+    min-height: 100vh;
+    color: var(--text-primary);
+    transition: background 0.35s, color 0.35s;
+  }
+
+  /* ---- Layout ---- */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ---- Header ---- */
+  .header {
+    text-align: center;
+    padding: 48px 0 40px;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  /* ---- Theme Selector ---- */
+  .theme-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .theme-picker label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .theme-picker select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--select-bg);
+    color: var(--select-text);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 5px 28px 5px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.25s, border-color 0.25s, color 0.25s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+  .theme-picker select:hover {
+    border-color: var(--border-primary);
+  }
+  .theme-picker select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(129,140,248,0.15);
+  }
+  .theme-picker select option {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  /* ---- Upload Zone ---- */
+  .upload-zone {
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border-primary);
+    border-radius: 16px;
+    padding: 40px 24px;
+    text-align: center;
+    transition: border-color 0.25s, background 0.25s;
+    cursor: pointer;
+    margin-bottom: 36px;
+  }
+  .upload-zone:hover,
+  .upload-zone.dragover {
+    border-color: var(--accent-primary);
+    background: var(--bg-tertiary);
+  }
+  .upload-zone .icon {
+    font-size: 2.8rem;
+    margin-bottom: 12px;
+  }
+  .upload-zone .label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-heading);
+  }
+  .upload-zone .hint {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .upload-zone .hint code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+  .upload-zone input[type="file"] {
+    display: none;
+  }
+
+  /* ---- Item List ---- */
+  .empty-state {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 3.5rem; display: block; margin-bottom: 16px; }
+  .empty-state .text { font-size: 1.05rem; }
+  .empty-state .text code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .item-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.35s;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .item-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--card-hover-border);
+  }
+  .item-card:hover::before { opacity: 1; }
+
+  .item-card .title {
+    font-size: 1.15rem;
+    font-weight: 650;
+    color: var(--text-heading);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .item-card .meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .item-card .meta .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--dot-color);
+    flex-shrink: 0;
+  }
+  .item-card .meta .filename {
+    color: var(--text-muted);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .item-card .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 550;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+  }
+  .btn-primary:hover {
+    background: var(--btn-primary-hover);
+    box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+  }
+
+  .btn-danger {
+    background: var(--btn-danger-bg);
+    color: var(--btn-danger-text);
+    border: 1px solid var(--btn-danger-border);
+  }
+  .btn-danger:hover {
+    background: var(--btn-danger-hover-bg);
+    color: var(--btn-danger-hover-text);
+  }
+
+  /* ---- Toast ---- */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--toast-bg);
+    color: var(--toast-text);
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s, background 0.35s, color 0.35s;
+    border: 1px solid var(--toast-border);
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { border-color: var(--toast-error-border); color: var(--toast-error-text); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>📄 MD Displayer</h1>
+    <p>Upload a .zip file containing Markdown documents to view them</p>
+    <div class="theme-picker">
+      <label for="themeSelect">🎨 Theme</label>
+      <select id="themeSelect" aria-label="Theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="forest">Forest</option>
+        <option value="sunset">Sunset</option>
+        <option value="ocean">Ocean</option>
+        <option value="mono">Mono</option>
+        <option value="cyberpunk">Cyberpunk</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="icon">📤</div>
+    <div class="label">Click or drag a <code>.zip</code> file here</div>
+    <div class="hint">The archive should contain at least one <code>.md</code> file</div>
+    <form id="uploadForm" action="{{ url_for('upload') }}?{{ key_param }}" method="POST" enctype="multipart/form-data">
+      <input type="file" name="file" id="fileInput" accept=".zip">
+    </form>
+  </div>
+
+  <!-- Item list -->
+  {% if items %}
+  <div class="item-grid">
+    {% for item in items %}
+    <div class="item-card">
+      <div class="title">{{ item.title }}</div>
+      <div class="meta">
+        <span class="dot"></span>
+        <span>{{ item.upload_time }}</span>
+      </div>
+      <div class="meta" style="margin-top:-6px;">
+        <span class="filename" title="{{ item.filename }}">📦 {{ item.filename }}</span>
+      </div>
+      <div class="actions">
+        <a href="{{ url_for('view', item_id=item.id) }}?{{ key_param }}" class="btn btn-primary">📖 Read</a>
+        <form method="POST" action="{{ url_for('delete', item_id=item.id) }}?{{ key_param }}"
+              onsubmit="return confirm('Delete &quot;{{ item.title|e }}&quot;? This cannot be undone.')">
+          <button type="submit" class="btn btn-danger">🗑 Delete</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span class="icon">📭</span>
+    <span class="text">No documents yet. Upload a <code>.zip</code> to get started.</span>
+  </div>
+  {% endif %}
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const zone   = document.getElementById('uploadZone');
+  const input  = document.getElementById('fileInput');
+  const form   = document.getElementById('uploadForm');
+  const toast  = document.getElementById('toast');
+
+  // Click to open file picker
+  zone.addEventListener('click', () => input.click());
+
+  // Drag & drop
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', e => { e.preventDefault(); zone.classList.remove('dragover'); });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length) {
+      input.files = files;
+      form.submit();
+    }
+  });
+
+  // Auto-submit on file selection
+  input.addEventListener('change', () => {
+    if (input.files.length) form.submit();
+  });
+
+  // Flash toast if server sent one (via flash messages — simple approach)
+  function showToast(msg, isError) {
+    toast.textContent = msg;
+    toast.className = 'toast' + (isError ? ' error' : '') + ' show';
+    setTimeout(() => { toast.classList.remove('show'); }, 3200);
+  }
+
+  // Check for error flash from query param
+  const params = new URLSearchParams(window.location.search);
+  const err = params.get('error');
+  if (err) showToast(decodeURIComponent(err), true);
+</script>
+
+<!-- Theme persistence -->
+<script>
+(function() {
+  var THEME_KEY = 'md-displayer-theme';
+  var select = document.getElementById('themeSelect');
+
+  // Load saved theme on page load
+  var saved = localStorage.getItem(THEME_KEY);
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    select.value = saved;
+  }
+
+  // Save and apply on change
+  select.addEventListener('change', function() {
+    var theme = select.value;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
+  });
+})();
+</script>
+
+</body>
+</html>
