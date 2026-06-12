@@ -81,6 +81,9 @@ ALLOWED_ATTRS = {
     '*': ['class', 'id'],
     'a': ['href', 'title', 'target', 'rel'],
     'img': ['src', 'alt', 'title', 'width', 'height'],
+    'div': ['style'],
+    'span': ['style'],
+    'p': ['style'],
     'th': ['style'],
     'td': ['style'],
     'input': ['type', 'checked', 'disabled'],
@@ -104,6 +107,7 @@ def _make_md() -> markdown.Markdown:
             'markdown.extensions.toc',           # [TOC]
             'markdown.extensions.def_list',      # definition lists
             'markdown.extensions.abbr',          # abbreviations
+            'markdown.extensions.md_in_html',    # process Markdown inside HTML blocks
         ],
         extension_configs={
             'pymdownx.arithmatex': {
@@ -160,6 +164,41 @@ def _normalize_display_math(text: str) -> str:
     return _DISPLAY_MATH_RE.sub(_fix, text)
 
 
+# Regex to match opening tags of HTML block‑level elements
+_BLOCK_HTML_RE = re.compile(
+    r'<(div|section|article|aside|header|footer|main|nav|figure)\b([^>]*)>',
+    re.IGNORECASE,
+)
+
+
+def _inject_markdown_attr(text: str) -> str:
+    """
+    Add markdown="1" to HTML block‑level elements that don't already have it,
+    so that the md_in_html extension processes Markdown inside them.
+    """
+    def _replace(m: re.Match) -> str:
+        tag_name = m.group(1)
+        rest = m.group(2)
+        if re.search(r'markdown\s*=\s*["\']', rest, re.IGNORECASE):
+            # Already has a markdown attribute — leave untouched
+            return m.group(0)
+        return f'<{tag_name}{rest} markdown="1">'
+
+    return _BLOCK_HTML_RE.sub(_replace, text)
+
+
+# Regex: "0) ", "1) ", "12) " at the beginning of a line (possibly indented)
+_N_PAREN_LIST_RE = re.compile(r'^([ \t]*)(\d+)\)\s', re.MULTILINE)
+
+
+def _normalize_ordered_list_markers(text: str) -> str:
+    """
+    Convert N)-style ordered list markers to N. (standard Markdown syntax).
+    E.g. "0) item" → "0. item", "  1) item" → "  1. item".
+    """
+    return _N_PAREN_LIST_RE.sub(r'\1\2. ', text)
+
+
 def render_markdown(text: str, item_id: str = '') -> str:
     """
     Convert markdown text to HTML using Python-Markdown + pymdown-extensions.
@@ -171,15 +210,42 @@ def render_markdown(text: str, item_id: str = '') -> str:
     # Pre-process: normalise blank lines around $$ display-math blocks
     text = _normalize_display_math(text)
 
+    # Pre-process: inject markdown="1" into HTML block elements so that
+    # the md_in_html extension processes Markdown inside them
+    text = _inject_markdown_attr(text)
+
+    # Pre-process: convert "1) " → "1. " so that ordered lists are
+    # recognised even when the author used parentheses instead of dots
+    text = _normalize_ordered_list_markers(text)
+
     md = _make_md()
     raw_html = md.convert(text)
 
     # Sanitize the HTML (defence-in-depth against XSS)
+    # Allow common inline-style CSS properties for div/span/p styling
+    css_sanitizer = CSSSanitizer(
+        allowed_css_properties=[
+            'background', 'background-color', 'background-image',
+            'border', 'border-left', 'border-right', 'border-top', 'border-bottom',
+            'border-radius', 'border-color', 'border-width', 'border-style',
+            'color', 'padding', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom',
+            'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom',
+            'width', 'max-width', 'min-width', 'height', 'max-height', 'min-height',
+            'display', 'text-align', 'text-decoration', 'text-transform',
+            'font-family', 'font-size', 'font-weight', 'font-style',
+            'line-height', 'letter-spacing', 'word-spacing',
+            'white-space', 'word-break', 'overflow', 'overflow-x', 'overflow-y',
+            'box-shadow', 'opacity', 'cursor', 'float', 'clear', 'position',
+            'top', 'right', 'bottom', 'left', 'z-index',
+            'vertical-align', 'list-style', 'list-style-type',
+            'box-sizing', 'transform', 'transition',
+        ],
+    )
     clean_html = bleach.clean(
         raw_html,
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRS,
-        css_sanitizer=CSSSanitizer(),
+        css_sanitizer=css_sanitizer,
         strip=True,
     )
 
