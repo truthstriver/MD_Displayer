@@ -131,37 +131,89 @@ def _make_md() -> markdown.Markdown:
     )
 
 
-# Regex to match display-math blocks delimited by $$ (single-line or multi-line)
-_DISPLAY_MATH_RE = re.compile(r'\$\$(.+?)\$\$', re.DOTALL)
+# Regex to match display-math blocks delimited by $$ at the start of a line
+# (possibly indented, e.g. inside list items / blockquotes).
+# Group 1 captures the full line prefix (blockquote markers + whitespace)
+# so we can preserve the indentation context when inserting surrounding blank lines.
+_DISPLAY_MATH_RE = re.compile(
+    r'^((?:>[ \t]*)*)([ \t]*)\$\$(.+?)\$\$',
+    re.MULTILINE | re.DOTALL,
+)
 
 
 def _normalize_display_math(text: str) -> str:
     """
     Ensure $$...$$ display-math blocks are surrounded by blank lines so that
     smart_dollar can recognise them as block-level math (not inline paragraphs).
+
+    Preserves the indentation of the $$ line so that math inside list items /
+    blockquotes does not break the surrounding Markdown structure.
     """
     def _fix(m: re.Match) -> str:
-        block = m.group(0)
+        # Full line prefix = blockquote markers (group 1) + whitespace indent (group 2)
+        prefix_str = m.group(1) + m.group(2)
+        math = m.group(3)     # the LaTeX content between $$ and $$
         start, end = m.start(), m.end()
 
-        # Check if preceded by \n\n (or at start of text)
-        if start > 0 and text[start-2:start] != '\n\n':
-            # Also handle single \n (not blank line)
-            if text[start-1:start] == '\n':
-                block = '\n' + block
-            else:
-                block = '\n\n' + block
+        # ---- prefix: ensure a blank line before the $$ block ----
+        if start == 0:
+            prefix = ''
+        elif text[start - 2:start] == '\n\n':
+            prefix = ''                          # already preceded by blank line
+        elif text[start - 1] == '\n':
+            prefix = '\n' + prefix_str           # single \n → add one more (indented)
+        else:
+            prefix = '\n\n' + prefix_str         # no newline → add blank line (indented)
 
-        # Check if followed by \n\n (or at end of text)
-        if end < len(text) and text[end:end+2] != '\n\n':
-            if text[end:end+1] == '\n':
-                block = block + '\n'
-            else:
-                block = block + '\n\n'
+        # ---- suffix: ensure a blank line after the $$ block ----
+        if end == len(text):
+            suffix = ''
+        elif text[end:end + 2] == '\n\n':
+            suffix = ''                          # already followed by blank line
+        elif text[end] == '\n':
+            suffix = '\n' + prefix_str           # single \n → add one more (indented)
+        else:
+            suffix = '\n\n' + prefix_str         # no newline → add blank line (indented)
 
-        return block
+        return f'{prefix}$${math}$${suffix}'
 
     return _DISPLAY_MATH_RE.sub(_fix, text)
+
+
+# Regex to detect a numbered list item at column 0 (e.g. "1. ", "12. ")
+_LIST_ITEM_RE = re.compile(r'^\d+\.\s')
+
+
+def _ensure_list_item_separation(text: str) -> str:
+    """
+    After _normalize_display_math inserts blank lines around $$ blocks,
+    loosely-structured lists may have their items merged because the
+    blank lines turn tight lists into loose ones, causing Python-Markdown
+    to treat subsequent numbered markers as paragraph text.
+
+    This function inserts a blank line before any numbered list item
+    (at column 0) that follows an indented continuation line, so that
+    the list items stay separated.
+    """
+    lines = text.split('\n')
+    result = []
+
+    for i, line in enumerate(lines):
+        stripped = line.lstrip(' ')
+        is_list_marker = bool(_LIST_ITEM_RE.match(stripped)) and line[0] != ' ' and line[0] != '\t'
+        is_indented_prev = (
+            i > 0
+            and lines[i - 1].strip() != ''
+            and (lines[i - 1].startswith(' ') or lines[i - 1].startswith('\t'))
+        )
+        prev_is_blank = i > 0 and lines[i - 1].strip() == ''
+
+        if is_list_marker and is_indented_prev and not prev_is_blank:
+            result.append('')  # insert blank line to separate list items
+
+        result.append(line)
+
+    return '\n'.join(result)
 
 
 # Regex to match opening tags of HTML block‑level elements
@@ -209,6 +261,11 @@ def render_markdown(text: str, item_id: str = '') -> str:
     """
     # Pre-process: normalise blank lines around $$ display-math blocks
     text = _normalize_display_math(text)
+
+    # Pre-process: ensure list items are properly separated after
+    # _normalize_display_math may have inserted blank lines that turn
+    # tight lists into loose ones, causing item markers to merge.
+    text = _ensure_list_item_separation(text)
 
     # Pre-process: inject markdown="1" into HTML block elements so that
     # the md_in_html extension processes Markdown inside them
